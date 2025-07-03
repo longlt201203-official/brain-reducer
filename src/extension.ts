@@ -56,7 +56,8 @@
 // }
 
 import * as vscode from 'vscode';
-import { OpenChatCommand } from './new/commands';
+import { OpenChatCommand, SetApiKeyCommand } from './new/commands';
+import { AiService, AIToolsManager } from './new/services';
 
 const outputChannel = vscode.window.createOutputChannel('Brain Reducer');
 
@@ -64,9 +65,14 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine('Brain Reducer extension is now activating...');
 
     const openChatCommand = OpenChatCommand.initialize(context);
+    const setApiKeyCommand = SetApiKeyCommand.initialize(context);
+
+    AiService.initialize(context);
+    AIToolsManager.initialize(context);
 
     context.subscriptions.push(
         vscode.commands.registerCommand(openChatCommand.Name, openChatCommand.handle.bind(openChatCommand)),
+        vscode.commands.registerCommand(setApiKeyCommand.Name, setApiKeyCommand.handle.bind(setApiKeyCommand))
     )
 }
 

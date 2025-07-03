@@ -49,6 +49,10 @@
       {
         "command": "brain-reducer.open-chat",
         "title": "Brain Reducer: Open Chat v2"
+      },
+      {
+        "command": "brain-reducer.set-api-key",
+        "title": "Brain Reducer: Set API Key"
       }
     ],
     "keybindings": [
@@ -104,10 +108,14 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/generative-ai": "^0.24.0",
+    "@langchain/core": "^0.3.61",
+    "@langchain/google-genai": "^0.2.14",
     "axios": "^1.6.0",
     "ejs": "^3.1.10",
     "gpt-tokenizer": "^2.9.0",
     "ignore": "^7.0.3",
-    "parse-gitignore": "^2.0.0"
+    "langchain": "^0.3.29",
+    "parse-gitignore": "^2.0.0",
+    "zod": "^3.25.71"
   }
 }
