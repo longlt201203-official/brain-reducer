@@ -1,0 +1,77 @@
+body {
+  background-color: var(--vscode-editor-background);
+}
+
+.btn-primary {
+  background-color: var(--vscode-button-background);
+  border-color: var(--vscode-button-border);
+  color: var(--vscode-button-foreground);
+}
+
+.disabled {
+  background-color: var(--vscode-disabledForeground) !important;
+  border-color: var(--vscode-button-border) !important;
+  color: var(--vscode-button-foreground) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--vscode-button-hoverBackground);
+  border-color: var(--vscode-button-border);
+}
+
+.btn-primary:active {
+  background-color: var(--vscode-button-background) !important;
+  border-color: var(--vscode-button-border) !important;
+  color: var(--vscode-button-foreground) !important;
+}
+
+.btn-secondary {
+  background-color: var(--vscode-button-secondaryBackground);
+  border-color: var(--vscode-button-border);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+  border-color: var(--vscode-button-border);
+}
+
+.btn-secondary:active {
+  background-color: var(--vscode-button-secondaryBackground) !important;
+  border-color: var(--vscode-button-border) !important;
+  color: var(--vscode-button-secondaryForeground) !important;
+}
+
+::placeholder {
+  color: var(--vscode-input-placeholderForeground) !important;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--vscode-input-background) !important;
+  border-color: var(--vscode-input-border) !important;
+  color: var(--vscode-input-foreground) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  box-shadow: none;
+}
+
+.user-msg {
+  background-color: var(--vscode-button-background);
+  border-color: var(--vscode-button-border);
+  color: var(--vscode-button-foreground);
+}
+
+.ai-msg {
+  background-color: var(--vscode-button-secondaryBackground);
+  border-color: var(--vscode-button-border);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+code {
+  background-color: var(--vscode-textBlockQuote-background);
+  border-color: var(--vscode-textBlockQuote-border);
+  color: var(--vscode-editor-foreground);
+}

@@ -4,22 +4,28 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { ChatSession } from "../sessions";
 import { AIToolsManager } from "./tools";
+import { ChatAnthropic } from "@langchain/anthropic";
 
 const AI_PROMPT = `
-You are an AI coding assistant with access to a file-reading tool. Whenever a user asks a question involving existing code, logic, bugs, or behavior:
+You are an AI coding assistant with access to a file-reading tool. Follow this step-by-step approach for every user question:
 
-- Use the file-reading tool freely and proactively.
-- You are allowed to decide which files to read to fully understand the context, even if the user doesn't explicitly mention them.
-- Prioritize reading relevant files before answering to ensure accurate and context-aware responses.
+**Step 1:** Before answering, assess whether reading any files is necessary to provide an accurate and context-aware response. Consider whether the question involves:
+- Existing code, components, or logic
+- Bug reports or unexpected behavior
+- Configuration or file-specific details
 
-When sharing code from a specific file:
-- Start the code block with a comment indicating the filename, like:
-// filename: example.js
-# filename: example.py
+**Step 2:** If relevant files are needed, proactively choose and read the files yourself using the file-reading tool — even if the user hasn't explicitly named them.
+
+**Step 3:** After reviewing the necessary files, construct your response based on the actual content. Do not guess when real file content is accessible.
+
+**Formatting Rule:**  
+When sharing code from a specific file, start the code block with a comment indicating the filename:
+- JavaScript: // filename: example.js  
+- Python: # filename: example.py
 
 If the code is general and not tied to a specific file, no filename comment is needed.
 
-Give clear, concise explanations and practical, working code. Always use available file content to improve accuracy, and don’t rely on assumptions when file data is accessible.
+Provide clear, concise explanations and practical, working code. Prioritize accuracy by grounding your answers in real project files when possible.
 
 Workspace structure:
 {workspaceStructure}
@@ -42,6 +48,11 @@ export class AiService {
 
     private createModel(modelName: string): BaseChatModel {
         switch (modelName) {
+            case "claude-sonnet-4-20250514":
+                return new ChatAnthropic({
+                    model: modelName,
+                    apiKey: this.context.globalState.get("brain-reducer.api-key"),
+                })
             case "gemini-2.0-flash":
                 return new ChatGoogleGenerativeAI({
                     model: modelName,
@@ -66,6 +77,8 @@ export class AiService {
             workspaceStructure: JSON.stringify(structure),
             msgs: messageList
         });
+
+        console.log(structure);
 
         return await model.bindTools!(Object.values(toolsMap)).stream(promptValue);
     }

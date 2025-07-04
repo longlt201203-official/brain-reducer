@@ -5,7 +5,7 @@ import * as fs from "fs";
 import { ChatSession } from "../sessions";
 import { AiService, AIToolsManager } from "../services";
 import { concat } from "@langchain/core/utils/stream";
-import { AIMessageChunk, HumanMessage, ToolMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
 
 export class ChatViewPannel extends BasePannel {
     private readonly chatSession: ChatSession;
@@ -33,6 +33,18 @@ export class ChatViewPannel extends BasePannel {
         htmlContent = this.loadMarkedJS(webview, htmlContent);
         return htmlContent;
     }
+
+    handleChangeViewState(e: vscode.WebviewPanelOnDidChangeViewStateEvent): void {
+        if (e.webviewPanel.visible && e.webviewPanel.active) {
+            // When the panel becomes visible and active, we can send the initial chat session data
+            this.pannel.webview.postMessage({
+                type: "load-chat-session",
+                data: this.chatSession.getJSONMessageList()
+            })
+        }
+    }
+
+    handleDidDispose(): void { }
 
     private loadBootstrap(webview: vscode.Webview, htmlContent: string) {
         const extensionUri = this.context.extensionUri;
@@ -71,10 +83,25 @@ export class ChatViewPannel extends BasePannel {
 
     private async handleSendMessage(data: any) {
         try {
-            this.chatSession.addMessage(new HumanMessage(data.content));
+            this.chatSession.addMessage(new HumanMessage({
+                content: [
+                    {
+                        type: "text",
+                        text: data.content
+                    },
+                    ...data.images.map((base64Image: string) => (
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: base64Image
+                            }
+                        }
+                    ))
+                ]
+            }));
             const toolsMap = AIToolsManager.getInstance().getToolsMap();
             let aiMessage = '';
-            let toolCallMessage: AIMessageChunk | undefined = undefined;
+            let toolCallMessage: AIMessage | undefined = undefined;
             let done = false;
             this.pannel.webview.postMessage({
                 type: "init-ai-message",
@@ -90,28 +117,35 @@ export class ChatViewPannel extends BasePannel {
                         const selectedTool = toolsMap[toolCall.name];
                         if (selectedTool) {
                             const toolMessage: ToolMessage = await selectedTool.invoke(toolCall);
-                            console.log(toolMessage)
                             this.chatSession.addMessage(toolMessage)
                         }
                     }
                     toolCallMessage = undefined;
                 }
+
                 let stream = await this.aiService.promptForAnswer(data.model, this.chatSession);
                 for await (const chunk of stream) {
+                    console.log(chunk);
+
                     if (chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
-                        toolCallMessage = toolCallMessage == undefined ? chunk : concat(toolCallMessage, chunk);
+                        toolCallMessage = toolCallMessage == undefined ? new AIMessage(chunk) : concat(toolCallMessage, chunk);
                         done = false;
                         continue;
                     }
 
                     if (chunk.content) {
-                        aiMessage += chunk.content;
+                        const contentFragment = typeof chunk.content == "string" ? chunk.content : chunk.content.length > 0 && chunk.content[0].type == "text" ? chunk.content[0].text : "";
+                        aiMessage += contentFragment;
                         this.pannel.webview.postMessage({
                             type: "ai-message-chunk",
-                            data: chunk.content
+                            data: contentFragment
                         });
-                        continue;
                     }
+                }
+
+                if (aiMessage.length > 0) {
+                    this.chatSession.addMessage(new AIMessage(aiMessage));
+                    aiMessage = '';
                 }
             }
 
