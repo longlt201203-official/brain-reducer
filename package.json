@@ -2,7 +2,7 @@
   "name": "brain-reducer",
   "displayName": "Brain Reducer",
   "description": "AI-powered coding assistant with Claude and Gemini integration",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "publisher": "longlt201203",
   "engines": {
     "vscode": "^1.98.0"
@@ -39,39 +39,23 @@
   "contributes": {
     "commands": [
       {
-        "command": "brain-reducer.configureApiKey",
-        "title": "Brain Reducer: Configure API Key"
+        "command": "brainReducer.openChat",
+        "title": "Brain Reducer: Open Chat"
       },
       {
-        "command": "brain-reducer.openChat",
-        "title": "Brain Reducer: Open Chat"
+        "command": "brainReducer.setApiKey",
+        "title": "Brain Reducer: Set API Key"
       }
     ],
-    "keybindings": [
-      {
-        "command": "brain-reducer.openChat",
-        "key": "ctrl+shift+a",
-        "mac": "cmd+shift+a",
-        "when": "editorTextFocus"
+    "configuration": {
+      "title": "Brain Reducer Settings",
+      "properties": {
+        "brainReducer.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for the AI service."
+        }
       }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "brain-reducer",
-          "title": "Brain Reducer",
-          "icon": "resources/icon.png"
-        }
-      ]
-    },
-    "views": {
-      "brain-reducer": [
-        {
-          "id": "brain-reducer.chatView",
-          "name": "AI Chat",
-          "type": "webview"
-        }
-      ]
     }
   },
   "scripts": {
@@ -100,10 +84,15 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/generative-ai": "^0.24.0",
+    "@langchain/anthropic": "^0.3.24",
+    "@langchain/core": "^0.3.61",
+    "@langchain/google-genai": "^0.2.14",
     "axios": "^1.6.0",
     "ejs": "^3.1.10",
     "gpt-tokenizer": "^2.9.0",
     "ignore": "^7.0.3",
-    "parse-gitignore": "^2.0.0"
+    "langchain": "^0.3.29",
+    "parse-gitignore": "^2.0.0",
+    "zod": "^3.25.71"
   }
 }
