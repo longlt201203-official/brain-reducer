@@ -1,7 +1,7 @@
 const vscode = acquireVsCodeApi();
 const { Marked } = globalThis.marked;
 const { markedHighlight } = globalThis.markedHighlight;
-const modelList = ["gemini-2.0-flash", "claude-sonnet-4-20250514"];
+const modelList = ["gemini-2.0-flash"];
 let currentModel = modelList[0];
 /**
  * @type {File[]}
@@ -57,6 +57,7 @@ const imagesPreviewContainer = document.getElementById(
 let currentAiMessageElement;
 let currentAiMessageContent = "";
 
+modelSelection.style.display = "none";
 modelSelection.innerHTML = modelList
   .map((model) => `<option value="${model}">${model}</option>`)
   .join();
@@ -77,7 +78,7 @@ function createUserMessage(content, images) {
   userMessageElement.className = "p-2 rounded text-start user-msg";
   userMessageElement.style.width = "fit-content";
   userMessageElement.style.maxWidth = "75%";
-  userMessageElement.innerHTML = marked.parse(content);
+  userMessageElement.innerHTML = content;
 
   const imagesContainer = document.createElement("div");
   imagesContainer.className = "d-flex flex-row";
@@ -103,14 +104,33 @@ function createUserMessage(content, images) {
 }
 
 function createAiMessage(content = "") {
+  const aiMessageHeadingElement = document.createElement("div");
+  aiMessageHeadingElement.className = "d-flex flex-row ai-msg-heading";
+  aiMessageHeadingElement.style.columnGap = "8px";
+
+  const aiNameWrapperElement = document.createElement("div");
+  aiNameWrapperElement.className = "d-flex flex-column";
+  aiNameWrapperElement.style.rowGap = "4px";
+
+  const aiNameElement = document.createElement("h5");
+  aiNameElement.innerText = "AI Assistant";
+  const aiDescriptionElement = document.createElement("p");
+
+  aiNameWrapperElement.appendChild(aiNameElement);
+  aiNameWrapperElement.appendChild(aiDescriptionElement);
+
+  aiMessageHeadingElement.appendChild(aiNameWrapperElement);
+
   const aiMessageElement = document.createElement("div");
   aiMessageElement.className = "p-2 rounded text-start ai-msg";
   aiMessageElement.style.width = "fit-content";
   aiMessageElement.style.maxWidth = "75%";
-  aiMessageElement.innerHTML = marked.parse(content);
+  aiMessageElement.innerHTML = content ? marked.parse(content) : "Loading...";
 
   const aiMessageWrapperElement = document.createElement("div");
   aiMessageWrapperElement.className = "d-flex flex-column align-items-start";
+  aiMessageWrapperElement.style.rowGap = "4px";
+  aiMessageWrapperElement.appendChild(aiMessageHeadingElement);
   aiMessageWrapperElement.appendChild(aiMessageElement);
 
   chatMessagesContainer.appendChild(aiMessageWrapperElement);
@@ -247,6 +267,11 @@ window.addEventListener("message", (e) => {
     case "ai-message-chunk":
       currentAiMessageContent += message.data;
       currentAiMessageElement.innerHTML = marked.parse(currentAiMessageContent);
+      break;
+    case "ai-message-error":
+      currentAiMessageElement.innerHTML = `<span class="text-danger">${message.data}</span>`;
+      currentAiMessageElement = null;
+      enableAllControls();
       break;
     case "complete-ai-message":
       currentAiMessageElement = null;

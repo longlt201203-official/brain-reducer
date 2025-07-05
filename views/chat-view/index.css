@@ -1,5 +1,10 @@
 body {
-  background-color: var(--vscode-editor-background);
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+}
+
+.btn {
+  border: none;
 }
 
 .btn-primary {
@@ -51,6 +56,7 @@ body {
   background-color: var(--vscode-input-background) !important;
   border-color: var(--vscode-input-border) !important;
   color: var(--vscode-input-foreground) !important;
+  border: none !important;
 }
 
 .form-control:focus,
@@ -59,15 +65,22 @@ body {
 }
 
 .user-msg {
-  background-color: var(--vscode-button-background);
-  border-color: var(--vscode-button-border);
+  background-color: var(--vscode-chat-requestBackground);
+  border-color: var(--vscode-chat-requestBorder);
   color: var(--vscode-button-foreground);
 }
 
 .ai-msg {
-  background-color: var(--vscode-button-secondaryBackground);
   border-color: var(--vscode-button-border);
   color: var(--vscode-button-secondaryForeground);
+}
+
+.ai-msg-heading h5 {
+  margin: 0;
+}
+
+.ai-msg-heading p {
+  margin: 0;
 }
 
 code {
