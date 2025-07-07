@@ -122,7 +122,7 @@ function createAiMessage(content = "") {
   aiMessageHeadingElement.appendChild(aiNameWrapperElement);
 
   const aiMessageElement = document.createElement("div");
-  aiMessageElement.className = "p-2 rounded text-start ai-msg";
+  aiMessageElement.className = "rounded text-start ai-msg";
   aiMessageElement.style.width = "fit-content";
   aiMessageElement.style.maxWidth = "75%";
   aiMessageElement.innerHTML = content ? marked.parse(content) : "Loading...";

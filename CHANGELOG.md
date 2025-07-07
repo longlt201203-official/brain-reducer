@@ -2,6 +2,11 @@
 
 All notable changes to the "Brain Reducer" extension will be documented in this file.
 
+## [0.1.1] - 2025-07-07
+
+- Update UI/UX
+- Update AI's logic handling for more consitency
+
 ## [0.1.0] - 2025-07-05
 
 - Remove Claude model

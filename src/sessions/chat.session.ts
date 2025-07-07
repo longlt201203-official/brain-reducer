@@ -28,10 +28,22 @@ export class ChatSession {
                     images: (humanMessageContent.slice(1) as any[]).map((item) => item.image_url.url)
                 });
             } else if (msg instanceof AIMessage) {
-                sessionData.push({
-                    role: "assistant",
-                    content: msg.content,
-                });
+                if (typeof msg.content == "string") {
+                    sessionData.push({
+                        role: "assistant",
+                        content: msg.content,
+                    });
+                } else {
+                    const aiMessageContent = msg.content as DataContentBlock[];
+                    for (const item of aiMessageContent) {
+                        if (item.type == "text") {
+                            sessionData.push({
+                                role: "assistant",
+                                content: item.text,
+                            });
+                        }
+                    }
+                }
             }
         }
         return sessionData;

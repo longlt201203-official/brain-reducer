@@ -5,7 +5,7 @@ import * as fs from "fs";
 import { ChatSession } from "../sessions";
 import { AiService, AIToolsManager } from "../services";
 import { concat } from "@langchain/core/utils/stream";
-import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
+import { AIMessage, AIMessageChunk, HumanMessage, ToolMessage } from "@langchain/core/messages";
 import { SetApiKeyCommand } from "../commands";
 
 export class ChatViewPannel extends BasePannel {
@@ -54,7 +54,7 @@ export class ChatViewPannel extends BasePannel {
     }
   }
 
-  handleDidDispose(): void {}
+  handleDidDispose(): void { }
 
   private loadBootstrap(webview: vscode.Webview, htmlContent: string) {
     const extensionUri = this.context.extensionUri;
@@ -166,20 +166,18 @@ export class ChatViewPannel extends BasePannel {
         })
       );
       const toolsMap = AIToolsManager.getInstance().getToolsMap();
-      let aiMessage = "";
-      let toolCallMessage: AIMessage | undefined = undefined;
       let done = false;
       this.pannel.webview.postMessage({
         type: "init-ai-message",
       });
 
       console.log("Start processing");
+      let aiMessageChunk: AIMessageChunk | undefined = undefined;
       while (!done) {
         done = true;
         console.log("Iteration");
-        if (toolCallMessage && toolCallMessage.tool_calls) {
-          this.chatSession.addMessage(toolCallMessage);
-          for (const toolCall of toolCallMessage.tool_calls) {
+        if (aiMessageChunk != undefined && aiMessageChunk.tool_calls && aiMessageChunk.tool_calls.length > 0) {
+          for (const toolCall of aiMessageChunk.tool_calls) {
             const selectedTool = toolsMap[toolCall.name];
             if (selectedTool) {
               const toolMessage: ToolMessage = await selectedTool.invoke(
@@ -188,7 +186,7 @@ export class ChatViewPannel extends BasePannel {
               this.chatSession.addMessage(toolMessage);
             }
           }
-          toolCallMessage = undefined;
+          aiMessageChunk = undefined;
         }
 
         let stream = await this.aiService.promptForAnswer(
@@ -196,35 +194,29 @@ export class ChatViewPannel extends BasePannel {
           this.chatSession
         );
         for await (const chunk of stream) {
-          console.log(chunk);
-
-          if (chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
-            toolCallMessage =
-              toolCallMessage == undefined
-                ? new AIMessage(chunk)
-                : concat(toolCallMessage, chunk);
-            done = false;
-            continue;
-          }
+          aiMessageChunk = aiMessageChunk == undefined ? chunk : concat(aiMessageChunk, chunk);
 
           if (chunk.content) {
             const contentFragment =
               typeof chunk.content == "string"
                 ? chunk.content
                 : chunk.content.length > 0 && chunk.content[0].type == "text"
-                ? chunk.content[0].text
-                : "";
-            aiMessage += contentFragment;
-            this.pannel.webview.postMessage({
-              type: "ai-message-chunk",
-              data: contentFragment,
-            });
+                  ? chunk.content[0].text
+                  : "";
+            if (contentFragment) {
+              this.pannel.webview.postMessage({
+                type: "ai-message-chunk",
+                data: contentFragment,
+              });
+            }
           }
         }
 
-        if (aiMessage.length > 0) {
-          this.chatSession.addMessage(new AIMessage(aiMessage));
-          aiMessage = "";
+        if (aiMessageChunk != undefined) {
+          this.chatSession.addMessage(new AIMessage(aiMessageChunk));
+          if (aiMessageChunk.tool_call_chunks && aiMessageChunk.tool_call_chunks.length > 0) {
+            done = false;
+          }
         }
       }
 

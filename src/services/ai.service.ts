@@ -45,7 +45,7 @@ export class AiService {
     return this.instance;
   }
 
-  private constructor(private readonly context: vscode.ExtensionContext) {}
+  private constructor(private readonly context: vscode.ExtensionContext) { }
 
   private createModel(modelName: string): BaseChatModel {
     const apiKey = vscode.workspace
@@ -82,8 +82,6 @@ export class AiService {
       workspaceStructure: JSON.stringify(structure),
       msgs: messageList,
     });
-
-    console.log(structure);
 
     return await model.bindTools!(Object.values(toolsMap)).stream(promptValue);
   }

@@ -67,12 +67,12 @@ body {
 .user-msg {
   background-color: var(--vscode-chat-requestBackground);
   border-color: var(--vscode-chat-requestBorder);
-  color: var(--vscode-button-foreground);
+  color: var(--vscode-editor-foreground);
 }
 
 .ai-msg {
   border-color: var(--vscode-button-border);
-  color: var(--vscode-button-secondaryForeground);
+  color: var(--vscode-editor-foreground);
 }
 
 .ai-msg-heading h5 {
