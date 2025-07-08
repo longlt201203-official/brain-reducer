@@ -1,7 +1,12 @@
 const vscode = acquireVsCodeApi();
 const { Marked } = globalThis.marked;
 const { markedHighlight } = globalThis.markedHighlight;
-const modelList = ["gemini-2.0-flash"];
+const modelList = [
+  "gemini-2.0-flash",
+  "claude-sonnet-4-20250514",
+  "claude-3-5-sonnet-latest",
+  "claude-3-7-sonnet-latest",
+];
 let currentModel = modelList[0];
 /**
  * @type {File[]}
@@ -57,13 +62,17 @@ const imagesPreviewContainer = document.getElementById(
 let currentAiMessageElement;
 let currentAiMessageContent = "";
 
-modelSelection.style.display = "none";
+// modelSelection.style.display = "none";
 modelSelection.innerHTML = modelList
   .map((model) => `<option value="${model}">${model}</option>`)
   .join();
 modelSelection.value = currentModel;
 modelSelection.addEventListener("change", (e) => {
   currentModel = e.target.value;
+  vscode.postMessage({
+    type: "set-model",
+    data: currentModel,
+  });
 });
 
 const baseHeight = parseInt(getComputedStyle(msgInput).height);
@@ -78,7 +87,9 @@ function createUserMessage(content, images) {
   userMessageElement.className = "p-2 rounded text-start user-msg";
   userMessageElement.style.width = "fit-content";
   userMessageElement.style.maxWidth = "75%";
-  userMessageElement.innerHTML = content;
+  userMessageElement.innerHTML = content
+    .split("\n")
+    .map((line) => `<p>${line}</p>`);
 
   const imagesContainer = document.createElement("div");
   imagesContainer.className = "d-flex flex-row";
@@ -212,8 +223,6 @@ function loadChatSession(chatSession = []) {
       createUserMessage(message.content, message.images);
     } else if (message.role == "assistant") {
       createAiMessage(message.content);
-    } else if (message.role == "tool") {
-      // Handle tool messages if needed
     }
   });
 }
@@ -280,6 +289,10 @@ window.addEventListener("message", (e) => {
       break;
     case "load-chat-session":
       loadChatSession(message.data);
+      break;
+    case "load-model":
+      currentModel = message.data;
+      modelSelection.value = currentModel;
       break;
   }
 });

@@ -6,32 +6,35 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import { ChatSession } from "../sessions";
-import { AIToolsManager } from "./tools";
 import { ChatAnthropic } from "@langchain/anthropic";
+import { ReadWorkspaceFolderStructureTool, ToolsManager } from "../tools";
 
 const AI_PROMPT = `
-You are an AI coding assistant with access to a file-reading tool. Follow this step-by-step approach for every user question:
+You are an AI coding assistant with access to a file-reading tool. Follow the steps below for every user question:
 
-**Step 1:** Before answering, assess whether reading any files is necessary to provide an accurate and context-aware response. Consider whether the question involves:
-- Existing code, components, or logic
-- Bug reports or unexpected behavior
-- Configuration or file-specific details
+**Step 1: Read the Workspace Structure**  
+Use the file-reading tool to understand the overall workspace layout. This helps you identify which files may be relevant to the user’s question.
 
-**Step 2:** If relevant files are needed, proactively choose and read the files yourself using the file-reading tool — even if the user hasn't explicitly named them.
+**Step 2: Identify Relevant Files (Max 5)**  
+Based on the question and the workspace structure, determine whether any files need to be read. Prioritize relevance and **limit reads to 5 files per request**. Focus on:
+- Existing code, logic, or components
+- Reported bugs or unexpected behavior
+- File-specific configuration or data
 
-**Step 3:** After reviewing the necessary files, construct your response based on the actual content. Do not guess when real file content is accessible.
+**Step 3: Read and Analyze the Files**  
+Proactively read the selected files using the tool, even if the user didn’t name them. Do not guess when actual file content is accessible.
 
-**Formatting Rule:**  
-When sharing code from a specific file, start the code block with a comment indicating the filename:
-- JavaScript: // filename: example.js  
-- Python: # filename: example.py
+**Step 4: Respond with Context-Aware Guidance**  
+Base your answer on the real content of the files. Ensure your explanation and code suggestions are accurate, grounded, and practical.
 
-If the code is general and not tied to a specific file, no filename comment is needed.
+**Code Formatting Rule:**  
+When sharing code from a specific file, always start with a filename comment:
+- JavaScript: \`// filename: example.js\`  
+- Python: \`# filename: example.py\`
 
-Provide clear, concise explanations and practical, working code. Prioritize accuracy by grounding your answers in real project files when possible.
+General-purpose code not tied to a specific file does not need a filename comment.
 
-Workspace structure:
-{workspaceStructure}
+Your responses must be clear, concise, and grounded in the real codebase. Use file-reading proactively—but never read more than 5 files per request.
 `;
 
 export class AiService {
@@ -52,6 +55,8 @@ export class AiService {
       .getConfiguration("brainReducer")
       .get<string>("apiKey", "");
     switch (modelName) {
+      case "claude-3-5-sonnet-latest":
+      case "claude-3-7-sonnet-latest":
       case "claude-sonnet-4-20250514":
         return new ChatAnthropic({
           model: modelName,
@@ -70,9 +75,9 @@ export class AiService {
   async promptForAnswer(modelName: string, chatSession: ChatSession) {
     const messageList = chatSession.getMessageList();
     const model = this.createModel(modelName);
-    const toolsMap = AIToolsManager.getInstance().getToolsMap();
+    const toolsMap = ToolsManager.getInstance().ToolsMap;
     const structure =
-      AIToolsManager.getInstance().readWorkspaceFolderStructure();
+      await ReadWorkspaceFolderStructureTool.getInstance().handle();
     const promptTemplate = ChatPromptTemplate.fromMessages([
       ["system", AI_PROMPT],
       new MessagesPlaceholder("msgs"),
@@ -83,6 +88,6 @@ export class AiService {
       msgs: messageList,
     });
 
-    return await model.bindTools!(Object.values(toolsMap)).stream(promptValue);
+    return await model.bindTools!(Object.values(toolsMap).map(item => item.Tool)).stream(promptValue);
   }
 }
