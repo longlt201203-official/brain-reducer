@@ -2,6 +2,11 @@
 
 All notable changes to the "Brain Reducer" extension will be documented in this file.
 
+## [0.1.2] - 2025-07-08
+
+- Model selection
+- Handle tool calling message on UI
+
 ## [0.1.1] - 2025-07-07
 
 - Update UI/UX
