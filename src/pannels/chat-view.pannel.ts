@@ -3,10 +3,11 @@ import { BasePannel } from "./base-pannel";
 import * as path from "path";
 import * as fs from "fs";
 import { ChatSession } from "../sessions";
-import { AiService, AIToolsManager } from "../services";
+import { AiService } from "../services";
 import { concat } from "@langchain/core/utils/stream";
 import { AIMessage, AIMessageChunk, HumanMessage, ToolMessage } from "@langchain/core/messages";
 import { SetApiKeyCommand } from "../commands";
+import { ToolsManager } from "../tools";
 
 export class ChatViewPannel extends BasePannel {
   private readonly chatSession: ChatSession;
@@ -16,6 +17,7 @@ export class ChatViewPannel extends BasePannel {
       localResourceRoots: [context.extensionUri],
       enableScripts: true,
     });
+    this.loadModel();
 
     this.chatSession = new ChatSession(context);
     this.aiService = AiService.getInstance();
@@ -51,6 +53,7 @@ export class ChatViewPannel extends BasePannel {
         type: "load-chat-session",
         data: this.chatSession.getJSONMessageList(),
       });
+      this.loadModel();
     }
   }
 
@@ -139,10 +142,22 @@ export class ChatViewPannel extends BasePannel {
     return htmlContent;
   }
 
+  private loadModel() {
+    this.pannel.webview.postMessage({
+      type: "load-model",
+      data: vscode.workspace
+        .getConfiguration("brainReducer")
+        .get<string>("model", "gemini-2.0-flash"),
+    })
+  }
+
   messageHandler(message: any) {
     switch (message.type) {
       case "send-message":
         this.handleSendMessage(message.data);
+        break;
+      case "set-model":
+        this.handleSetModel(message.data);
         break;
     }
   }
@@ -165,7 +180,7 @@ export class ChatViewPannel extends BasePannel {
           ],
         })
       );
-      const toolsMap = AIToolsManager.getInstance().getToolsMap();
+      const toolsMap = ToolsManager.getInstance().ToolsMap;
       let done = false;
       this.pannel.webview.postMessage({
         type: "init-ai-message",
@@ -180,7 +195,11 @@ export class ChatViewPannel extends BasePannel {
           for (const toolCall of aiMessageChunk.tool_calls) {
             const selectedTool = toolsMap[toolCall.name];
             if (selectedTool) {
-              const toolMessage: ToolMessage = await selectedTool.invoke(
+              this.pannel.webview.postMessage({
+                type: "ai-message-chunk",
+                data: `\n\n${selectedTool.getMessage(toolCall.args)}\n\n`
+              });
+              const toolMessage: ToolMessage = await selectedTool.Tool.invoke(
                 toolCall
               );
               this.chatSession.addMessage(toolMessage);
@@ -227,6 +246,12 @@ export class ChatViewPannel extends BasePannel {
     } catch (err: any) {
       this.handleError(err);
     }
+  }
+
+  private async handleSetModel(modelName: string) {
+    const configuration = vscode.workspace.getConfiguration("brainReducer");
+    configuration.update("model", modelName, vscode.ConfigurationTarget.Global);
+    vscode.window.showInformationMessage(`AI model set to ${modelName}. Please change the API key if necessary.`);
   }
 
   private handleError(err: any) {

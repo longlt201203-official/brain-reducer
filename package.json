@@ -29,7 +29,7 @@
     "type": "git",
     "url": "https://github.com/longlt201203/brain-reducer"
   },
-  "homepage": "https://github.com/longlt201203/brain-reducer/blob/main/README.md",
+  "homepage": "https://github.com/longlt201203/brain-reducer",
   "bugs": {
     "url": "https://github.com/longlt201203/brain-reducer/issues"
   },
@@ -54,6 +54,11 @@
           "type": "string",
           "default": "",
           "description": "API key for the AI service."
+        },
+        "brainReducer.model": {
+          "type": "string",
+          "default": "gemini-2.0-flash",
+          "description": "Current AI Model"
         }
       }
     }

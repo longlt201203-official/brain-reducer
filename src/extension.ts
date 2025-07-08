@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { OpenChatCommand, SetApiKeyCommand } from "./commands";
-import { AiService, AIToolsManager } from "./services";
+import { AiService } from "./services";
+import { ToolsManager } from "./tools";
 
 const outputChannel = vscode.window.createOutputChannel("Brain Reducer");
 
@@ -11,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
   const setApiKeyCommand = SetApiKeyCommand.initialize(context);
 
   AiService.initialize(context);
-  AIToolsManager.initialize(context);
+  ToolsManager.initialize(context);
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
