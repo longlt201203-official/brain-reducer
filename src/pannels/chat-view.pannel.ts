@@ -210,7 +210,8 @@ export class ChatViewPannel extends BasePannel {
 
         let stream = await this.aiService.promptForAnswer(
           data.model,
-          this.chatSession
+          this.chatSession,
+          data.searchInternet
         );
         for await (const chunk of stream) {
           aiMessageChunk = aiMessageChunk == undefined ? chunk : concat(aiMessageChunk, chunk);
