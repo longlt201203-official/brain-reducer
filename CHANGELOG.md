@@ -2,6 +2,10 @@
 
 All notable changes to the "Brain Reducer" extension will be documented in this file.
 
+## [0.1.6] - 2025-07-10
+
+- Retain browser when finish tool call
+
 ## [0.1.5] - 2025-07-10
 
 - Fix bug prompt AI

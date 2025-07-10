@@ -1,7 +1,6 @@
 import z from "zod";
 import { BaseTool } from "./base-tool";
-import puppeteer from "puppeteer-core";
-import * as vscode from "vscode";
+import { BrowserSession } from "../sessions";
 
 const SearchInternetInputSchema = z.object({
     query: z.string().describe("The query to search on the internet")
@@ -33,15 +32,7 @@ export class SearchInternetTool extends BaseTool {
             title: string;
             href: string | null;
         }[] = [];
-        const chromeLocation = vscode.workspace.getConfiguration('brainReducer').get<string>('chromeLocation');
-        if (!chromeLocation) {
-            throw new Error("Chrome location is not set. Please set it with \"Brain Reducer: Set Chrome Location\" command.");
-        }
-        const browser = await puppeteer.launch({
-            executablePath: chromeLocation,
-            headless: false,
-            defaultViewport: null
-        });
+        const browser = await BrowserSession.getBrowser();
 
         const page = await browser.newPage();
         await page.goto('https://privacia.org/search?q=' + encodeURIComponent(input.query));
@@ -57,8 +48,6 @@ export class SearchInternetTool extends BaseTool {
                 href: node.getAttribute("href")
             }))));
         }
-
-        await browser.close();
 
         return JSON.stringify(data);
     }
