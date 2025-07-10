@@ -11,6 +11,9 @@ env:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      VSCE_USERNAME: ${{ secrets.VSCE_USERNAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +29,6 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Login to vscode
-        run: echo "${{ secrets.VSCE_PAT }}" | vsce login "${{ secrets.VSCE_USERNAME }}"
+        run: vsce login "${{ env.VSCE_USERNAME }}"
       - name: Build and publish extension
         run: vsce publish
