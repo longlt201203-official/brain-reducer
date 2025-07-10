@@ -180,6 +180,9 @@ function disableAllControls() {
 
   sendBth.disabled = true;
   sendBth.classList.add("disabled");
+
+  searchInternetCheckbox.disabled = true;
+  searchInternetCheckbox.classList.add("disabled");
 }
 
 function enableAllControls() {
@@ -194,6 +197,9 @@ function enableAllControls() {
 
   sendBth.disabled = false;
   sendBth.classList.remove("disabled");
+
+  searchInternetCheckbox.disabled = false;
+  searchInternetCheckbox.classList.remove("disabled");
 }
 
 async function sendMessage() {
@@ -211,11 +217,11 @@ async function sendMessage() {
     content: msg,
     model: currentModel,
     images: base64Images,
+    searchInternet: searchInternetCheckbox.checked,
   };
   vscode.postMessage({
     type: "send-message",
     data: msgData,
-    searchInternet: searchInternetCheckbox.checked,
   });
   msgInput.value = "";
   msgInput.style.height = baseHeight + "px";

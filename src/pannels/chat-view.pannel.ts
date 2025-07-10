@@ -16,6 +16,7 @@ export class ChatViewPannel extends BasePannel {
     super(context, "chat-view", "AI Chat", vscode.ViewColumn.Two, {
       localResourceRoots: [context.extensionUri],
       enableScripts: true,
+      retainContextWhenHidden: true
     });
     this.loadModel();
 
@@ -49,10 +50,10 @@ export class ChatViewPannel extends BasePannel {
   handleChangeViewState(e: vscode.WebviewPanelOnDidChangeViewStateEvent): void {
     if (e.webviewPanel.visible && e.webviewPanel.active) {
       // When the panel becomes visible and active, we can send the initial chat session data
-      this.pannel.webview.postMessage({
-        type: "load-chat-session",
-        data: this.chatSession.getJSONMessageList(),
-      });
+      // this.pannel.webview.postMessage({
+      //   type: "load-chat-session",
+      //   data: this.chatSession.getJSONMessageList(),
+      // });
       this.loadModel();
     }
   }
@@ -163,6 +164,8 @@ export class ChatViewPannel extends BasePannel {
   }
 
   private async handleSendMessage(data: any) {
+    console.log(data)
+
     try {
       this.chatSession.addMessage(
         new HumanMessage({
@@ -193,6 +196,7 @@ export class ChatViewPannel extends BasePannel {
         console.log("Iteration");
         if (aiMessageChunk != undefined && aiMessageChunk.tool_calls && aiMessageChunk.tool_calls.length > 0) {
           for (const toolCall of aiMessageChunk.tool_calls) {
+            console.log(toolCall.args);
             const selectedTool = toolsMap[toolCall.name];
             if (selectedTool) {
               this.pannel.webview.postMessage({

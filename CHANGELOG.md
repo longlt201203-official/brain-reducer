@@ -2,6 +2,11 @@
 
 All notable changes to the "Brain Reducer" extension will be documented in this file.
 
+## [0.1.5] - 2025-07-10
+
+- Fix bug prompt AI
+- Update UI
+
 ## [0.1.4] - 2025-07-10
 
 - Fix bug CI

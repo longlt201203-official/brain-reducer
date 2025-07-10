@@ -4,6 +4,7 @@ import { ReadWorkspaceFolderStructureTool } from "./read-folder-structure.tool";
 import { BaseTool } from "./base-tool";
 import { SearchInternetTool } from "./search-internet.tool";
 import { VisitUrlTool } from "./visit-url.tool";
+import { DynamicStructuredTool, DynamicTool } from "langchain/tools";
 
 export class ToolsManager {
     private static instance: ToolsManager;
@@ -35,17 +36,18 @@ export class ToolsManager {
     }
 
     getToolsList(internetSearch: boolean = false) {
-        const toolsList: BaseTool[] = [];
+        const toolsList: (DynamicTool | DynamicStructuredTool)[] = [];
         for (const toolName in this.toolsMap) {
             const tool = this.toolsMap[toolName];
             if (!internetSearch && (
                 tool instanceof SearchInternetTool ||
                 tool instanceof VisitUrlTool
             )) {
+                console.log(`Skipping tool: ${toolName} because internet search is disabled.`);
                 continue;
             }
 
-            toolsList.push(tool);
+            toolsList.push(tool.Tool);
         }
         return toolsList;
     }

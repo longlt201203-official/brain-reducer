@@ -9,11 +9,11 @@ import { ChatSession } from "../sessions";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { ReadWorkspaceFolderStructureTool, ToolsManager } from "../tools";
 
-const AI_PROMPT = `
-You are an AI coding assistant with access to three tools:
-1. A file-reading tool (limit: 5 files per request)
+const AI_PROMPT = (searchInternet: boolean) => `
+You are an AI coding assistant with access to the following tool(s):
+1. A file-reading tool (limit: 5 files per request)${searchInternet ? `
 2. A web search tool (to search the internet)
-3. A web visit tool (to open and inspect a specific website)
+3. A web visit tool (to open and inspect a specific website)` : ''}
 
 Always follow this step-by-step process before answering any user question:
 
@@ -27,22 +27,23 @@ Choose the appropriate tool(s) depending on the user’s question:
   - Existing code, components, or logic
   - Bugs or unexpected behavior
   - File-specific configuration or data  
-  You may read up to **5 relevant files per request.
+  You may read up to **5 relevant files per request.${searchInternet ? `
 
 - Use the search tool if the question requires:
   - Up-to-date information
   - Documentation or examples from the internet
   - Researching third-party libraries, APIs, or news
 
-- Use the visit tool if the user provides a URL or you need to inspect content from a search result or known webpage.
+- Use the visit tool if the user provides a URL or you need to inspect content from a search result or known webpage.` : ''}
 
 Step 3: Use the Tools Proactively
-- Don't wait for the user to name specific files or links.
-- Search or read based on what will help produce the most accurate answer.
-- Never guess if you can use real data from files or websites.
+- Don't wait for the user to name specific files${searchInternet ? ' or links' : ''}.
+- Read based on what will help produce the most accurate answer.${searchInternet ? `
+- Use web search or site visits only if necessary.` : ''}
+- Never guess if you can use real data from files${searchInternet ? ' or websites' : ''}.
 
 Step 4: Respond with Accurate, Context-Aware Guidance
-Base your answer on what you found from tools. Be clear, direct, and practical. Your answer should solve the problem using real context from the workspace or the web.
+Base your answer on what you found from tools. Be clear, direct, and practical. Your answer should solve the problem using real context from the workspace${searchInternet ? ' or the web' : ''}.
 
 Code Formatting Rule:
 If you share code from a file, always include a filename comment at the top of the code block:
@@ -95,7 +96,7 @@ export class AiService {
     const structure =
       await ReadWorkspaceFolderStructureTool.getInstance().handle();
     const promptTemplate = ChatPromptTemplate.fromMessages([
-      ["system", AI_PROMPT],
+      ["system", AI_PROMPT(searchInternet)],
       new MessagesPlaceholder("msgs"),
     ]);
 

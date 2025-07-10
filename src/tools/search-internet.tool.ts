@@ -3,6 +3,10 @@ import { BaseTool } from "./base-tool";
 import puppeteer from "puppeteer-core";
 import * as vscode from "vscode";
 
+const SearchInternetInputSchema = z.object({
+    query: z.string().describe("The query to search on the internet")
+})
+
 export class SearchInternetTool extends BaseTool {
     private static instance: SearchInternetTool;
     static getInstance() {
@@ -16,15 +20,15 @@ export class SearchInternetTool extends BaseTool {
         super({
             toolName: "searchInternet",
             toolDescription: "Search the internet for information",
-            inputSchema: z.string().describe("The query to search on the internet")
+            inputSchema: SearchInternetInputSchema
         });
     }
 
-    getMessage(input: string) {
-        return `Searching the internet for: ${input}...`;
+    getMessage(input: z.infer<typeof SearchInternetInputSchema>) {
+        return `Searching the internet for: *${input.query}*...`;
     }
 
-    async handle(input: string) {
+    async handle(input: z.infer<typeof SearchInternetInputSchema>) {
         let data: {
             title: string;
             href: string | null;
@@ -40,7 +44,7 @@ export class SearchInternetTool extends BaseTool {
         });
 
         const page = await browser.newPage();
-        await page.goto('https://privacia.org/search?q=' + encodeURIComponent(input));
+        await page.goto('https://privacia.org/search?q=' + encodeURIComponent(input.query));
 
         const resultsSelector = '.gsc-webResult.gsc-result'
         const webResultTitleSelector = '.web-result-title';
@@ -56,6 +60,6 @@ export class SearchInternetTool extends BaseTool {
 
         await browser.close();
 
-        return data;
+        return JSON.stringify(data);
     }
 }

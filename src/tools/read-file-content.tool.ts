@@ -34,7 +34,7 @@ export class ReadFileContentTool extends BaseTool {
         return fs.readFileSync(relativePath, 'utf-8');
     }
 
-    getMessage(input: any): string {
+    getMessage(input: z.infer<typeof ReadFileContentInputSchema>): string {
         return `Reading the content of the file at path: ${input.filepath} in workspace: ${input.workspace}...`;
     }
 }
