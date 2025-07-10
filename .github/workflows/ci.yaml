@@ -26,6 +26,6 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Login to vscode
-        run: echo "${{ secrets.VSCE_PAT }}" | vsce login ${{ secrets.VSCE_USERNAME }}
+        run: echo "${{ secrets.VSCE_PAT }}" | vsce login "${{ secrets.VSCE_USERNAME }}"
       - name: Build and publish extension
         run: vsce publish
