@@ -49,7 +49,7 @@ export class SearchInternetTool extends BaseTool {
         if (resultsHandle) {
             const webResultHandles = await resultsHandle.$$(webResultTitleSelector);
             data = await Promise.all(webResultHandles.map((h) => h.evaluate(node => ({
-                title: node.textContent.trim(),
+                title: node.textContent ? node.textContent.trim() : "",
                 href: node.getAttribute("href")
             }))));
         }
