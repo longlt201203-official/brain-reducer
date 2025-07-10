@@ -27,11 +27,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/longlt201203/brain-reducer"
+    "url": "https://github.com/longlt201203-official/brain-reducer"
   },
-  "homepage": "https://github.com/longlt201203/brain-reducer",
+  "homepage": "https://github.com/longlt201203-official/brain-reducer",
   "bugs": {
-    "url": "https://github.com/longlt201203/brain-reducer/issues"
+    "url": "https://github.com/longlt201203-official/brain-reducer/issues"
   },
   "license": "MIT",
   "activationEvents": [],
