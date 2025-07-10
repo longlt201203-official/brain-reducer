@@ -35,6 +35,12 @@ const msgInput = document.getElementById("msg-input");
 /**
  * @type {HTMLInputElement}
  */
+const searchInternetCheckbox = document.getElementById(
+  "search-internet-checkbox"
+);
+/**
+ * @type {HTMLInputElement}
+ */
 const filesInput = document.getElementById("files-input");
 /**
  * @type {HTMLLabelElement}
@@ -209,6 +215,7 @@ async function sendMessage() {
   vscode.postMessage({
     type: "send-message",
     data: msgData,
+    searchInternet: searchInternetCheckbox.checked,
   });
   msgInput.value = "";
   msgInput.style.height = baseHeight + "px";

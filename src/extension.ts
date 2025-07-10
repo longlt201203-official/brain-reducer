@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { OpenChatCommand, SetApiKeyCommand } from "./commands";
+import { OpenChatCommand, SetApiKeyCommand, SetChromeLocationCommand } from "./commands";
 import { AiService } from "./services";
 import { ToolsManager } from "./tools";
 
@@ -10,6 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const openChatCommand = OpenChatCommand.initialize(context);
   const setApiKeyCommand = SetApiKeyCommand.initialize(context);
+  const setChromeLocationCommand = SetChromeLocationCommand.initialize(context);
 
   AiService.initialize(context);
   ToolsManager.initialize(context);
@@ -22,6 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       setApiKeyCommand.Name,
       setApiKeyCommand.handle.bind(setApiKeyCommand)
+    ),
+    vscode.commands.registerCommand(
+      setChromeLocationCommand.Name,
+      setChromeLocationCommand.handle.bind(setChromeLocationCommand)
     )
   );
 }

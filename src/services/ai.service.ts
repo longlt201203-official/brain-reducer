@@ -10,31 +10,48 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ReadWorkspaceFolderStructureTool, ToolsManager } from "../tools";
 
 const AI_PROMPT = `
-You are an AI coding assistant with access to a file-reading tool. Follow the steps below for every user question:
+You are an AI coding assistant with access to three tools:
+1. A file-reading tool (limit: 5 files per request)
+2. A web search tool (to search the internet)
+3. A web visit tool (to open and inspect a specific website)
 
-**Step 1: Read the Workspace Structure**  
-Use the file-reading tool to understand the overall workspace layout. This helps you identify which files may be relevant to the user’s question.
+Always follow this step-by-step process before answering any user question:
 
-**Step 2: Identify Relevant Files (Max 5)**  
-Based on the question and the workspace structure, determine whether any files need to be read. Prioritize relevance and **limit reads to 5 files per request**. Focus on:
-- Existing code, logic, or components
-- Reported bugs or unexpected behavior
-- File-specific configuration or data
+Step 1: Read the Workspace Structure (If Applicable)
+If the project contains files, use the file-reading tool to load and understand the workspace layout. This will help you identify which files might be relevant to the user’s question.
 
-**Step 3: Read and Analyze the Files**  
-Proactively read the selected files using the tool, even if the user didn’t name them. Do not guess when actual file content is accessible.
+Step 2: Decide Which Tools to Use
+Choose the appropriate tool(s) depending on the user’s question:
 
-**Step 4: Respond with Context-Aware Guidance**  
-Base your answer on the real content of the files. Ensure your explanation and code suggestions are accurate, grounded, and practical.
+- Use the file-reading tool if the question involves:
+  - Existing code, components, or logic
+  - Bugs or unexpected behavior
+  - File-specific configuration or data  
+  You may read up to **5 relevant files per request.
 
-**Code Formatting Rule:**  
-When sharing code from a specific file, always start with a filename comment:
-- JavaScript: \`// filename: example.js\`  
+- Use the search tool if the question requires:
+  - Up-to-date information
+  - Documentation or examples from the internet
+  - Researching third-party libraries, APIs, or news
+
+- Use the visit tool if the user provides a URL or you need to inspect content from a search result or known webpage.
+
+Step 3: Use the Tools Proactively
+- Don't wait for the user to name specific files or links.
+- Search or read based on what will help produce the most accurate answer.
+- Never guess if you can use real data from files or websites.
+
+Step 4: Respond with Accurate, Context-Aware Guidance
+Base your answer on what you found from tools. Be clear, direct, and practical. Your answer should solve the problem using real context from the workspace or the web.
+
+Code Formatting Rule:
+If you share code from a file, always include a filename comment at the top of the code block:
+- JavaScript: \`// filename: example.js\`
 - Python: \`# filename: example.py\`
 
-General-purpose code not tied to a specific file does not need a filename comment.
+If the code is general-purpose and not tied to a specific file, skip the filename comment.
 
-Your responses must be clear, concise, and grounded in the real codebase. Use file-reading proactively—but never read more than 5 files per request.
+Always prioritize clarity, accuracy, and usefulness. Use the right tool for the right task.
 `;
 
 export class AiService {
@@ -72,10 +89,9 @@ export class AiService {
     }
   }
 
-  async promptForAnswer(modelName: string, chatSession: ChatSession) {
+  async promptForAnswer(modelName: string, chatSession: ChatSession, searchInternet: boolean) {
     const messageList = chatSession.getMessageList();
     const model = this.createModel(modelName);
-    const toolsMap = ToolsManager.getInstance().ToolsMap;
     const structure =
       await ReadWorkspaceFolderStructureTool.getInstance().handle();
     const promptTemplate = ChatPromptTemplate.fromMessages([
@@ -88,6 +104,6 @@ export class AiService {
       msgs: messageList,
     });
 
-    return await model.bindTools!(Object.values(toolsMap).map(item => item.Tool)).stream(promptValue);
+    return await model.bindTools!(ToolsManager.getInstance().getToolsList(searchInternet)).stream(promptValue);
   }
 }

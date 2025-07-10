@@ -53,7 +53,7 @@ export class ReadWorkspaceFolderStructureTool extends BaseTool {
         return structure;
     }
 
-    getMessage(input: any): string {
+    getMessage(): string {
         return `Reading the folder structure of the workspace...`;
     }
 }
