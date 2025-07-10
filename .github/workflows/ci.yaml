@@ -30,4 +30,6 @@ jobs:
       - name: Verify extension
         run: vsce verify-pat
       - name: Build and publish extension
-        run: vsce publish
+        run: |
+          vsce package &&
+          vsce publish
