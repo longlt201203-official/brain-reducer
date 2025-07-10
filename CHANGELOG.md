@@ -2,6 +2,10 @@
 
 All notable changes to the "Brain Reducer" extension will be documented in this file.
 
+## [0.1.3] - 2025-07-10
+
+- Add search internet feature
+
 ## [0.1.2] - 2025-07-08
 
 - Model selection
