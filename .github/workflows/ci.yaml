@@ -28,6 +28,6 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Verify extension
-        run: vsce verify
+        run: vsce verify-pat
       - name: Build and publish extension
         run: vsce publish
